@@ -1,38 +1,39 @@
 <template>
-  <div class="Sign">
+  <validation-observer ref="observer" v-slot="{ invalid }" class="Sign">
     <sign-form class="Sign-form" @submit.prevent="onSubmit">
-      <label class="Form-row">
+      <validation-provider rules="required|email" tag="label" class="Form-row">
         <input
           v-model="form.email"
-          v-validate="'required|email'"
           name="email"
           placeholder="Email"
           type="text"
         />
-      </label>
+      </validation-provider>
 
-      <label class="Form-row">
+      <validation-provider rules="required" tag="label" class="Form-row">
         <input
           ref="password"
           v-model="form.password"
-          v-validate="'required'"
           name="password"
           placeholder="Password"
           type="password"
         />
-      </label>
+      </validation-provider>
 
-      <label class="Form-row">
+      <validation-provider
+        rules="required|confirmed:password"
+        tag="label"
+        class="Form-row"
+      >
         <input
           v-model="form.confirmPassword"
-          v-validate="'required|confirmed:password'"
           name="password"
           placeholder="Repeat Password"
           type="password"
         />
-      </label>
+      </validation-provider>
 
-      <button slot="submit" type="submit" class="button" :disabled="isDisabled">
+      <button slot="submit" type="submit" class="button" :disabled="invalid">
         CREATE AN ACCOUNT
       </button>
     </sign-form>
@@ -47,7 +48,7 @@
       <router-link to="/help/conditions-of-use"> conditions of use </router-link
       >.
     </p>
-  </div>
+  </validation-observer>
 </template>
 
 <script lang="ts">
@@ -71,14 +72,16 @@ const initialState = {
 })
 export default class Sign extends Mixins(FormMixin) {
   @authModule.Action('signUp')
-  signUp!: (params: Pick<typeof initialState, 'email' | 'password'>) => void
+  signUp!: (
+    params: Pick<typeof initialState, 'email' | 'password'>,
+  ) => Promise<void>
 
   form = {
     ...initialState,
   }
 
   async onSubmit() {
-    const response = await this.validateAll()
+    const response = await this.$refs.observer.validate()
 
     if (response) {
       const { email, password } = this.form

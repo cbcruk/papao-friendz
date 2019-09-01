@@ -3,11 +3,7 @@
     <option value="">
       State / Province
     </option>
-    <option
-      v-for="state in states"
-      :key="state.key"
-      :value="state.key"
-    >
+    <option v-for="state in states" :key="state.key" :value="state.key">
       {{ state.value }}
     </option>
   </select>

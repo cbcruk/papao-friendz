@@ -1,25 +1,33 @@
 <template>
-  <div class="Sign">
+  <validation-observer ref="observer" v-slot="{ invalid }" class="Sign">
     <sign-form class="Sign-form" @submit.prevent="onSubmit">
-      <label class="Form-row">
+      <validation-provider
+        name="Email"
+        rules="required|email"
+        tag="label"
+        class="Form-row"
+      >
         <input
           v-model="form.email"
-          v-validate="'required|email'"
           name="email"
           placeholder="Email"
           type="email"
         />
-      </label>
+      </validation-provider>
 
-      <label class="Form-row">
+      <validation-provider
+        name="Password"
+        rules="required|min:6"
+        tag="label"
+        class="Form-row"
+      >
         <input
           v-model="form.password"
-          v-validate="'required|min:6'"
           name="password"
           placeholder="Password"
           type="password"
         />
-      </label>
+      </validation-provider>
 
       <div class="Sign-form_etc">
         <label class="Sign-form_remeber">
@@ -31,7 +39,7 @@
         </router-link>
       </div>
 
-      <button slot="submit" type="submit" class="button" :disabled="isDisabled">
+      <button slot="submit" type="submit" class="button" :disabled="invalid">
         SIGN IN
       </button>
     </sign-form>
@@ -49,7 +57,7 @@
         </router-link>
       </div>
     </div>
-  </div>
+  </validation-observer>
 </template>
 
 <script lang="ts">
@@ -79,9 +87,9 @@ export default class Sign extends Mixins(FormMixin) {
   }
 
   async onSubmit() {
-    const response = await this.validateAll()
+    const isValid = await this.$refs.observer.validate()
 
-    if (response) {
+    if (isValid) {
       this.signIn(this.form)
     }
   }

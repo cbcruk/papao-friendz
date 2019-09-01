@@ -1,5 +1,11 @@
 <template>
-  <form class="CommentsForm" @submit.prevent="onSubmit">
+  <validation-observer
+    tag="form"
+    ref="observer"
+    v-slot="{ invalid }"
+    class="CommentsForm"
+    @submit.prevent="onSubmit"
+  >
     <label class="CommentsForm-rate_label">
       Rate this product
       <div class="CommentsForm-rate_inputs">
@@ -21,13 +27,14 @@
       />
     </label>
 
-    <textarea
-      v-model="form.content"
-      v-validate="'required'"
-      name="content"
-      class="CommentsForm-content"
-      :placeholder="randomMessage"
-    />
+    <validation-provider rules="required">
+      <textarea
+        v-model="form.content"
+        name="content"
+        class="CommentsForm-content"
+        :placeholder="randomMessage"
+      />
+    </validation-provider>
 
     <button
       :class="{
@@ -36,11 +43,11 @@
         'is-outline': true,
       }"
       type="submit"
-      :disabled="isDisabled"
+      :disabled="invalid"
     >
       Submit
     </button>
-  </form>
+  </validation-observer>
 </template>
 
 <script lang="ts">
@@ -101,7 +108,7 @@ export default class CommentsForm extends Mixins(Form) {
   }
 
   async onSubmit() {
-    const response = await this.validateAll()
+    const response = await this.$refs.observer.validate()
 
     if (!response) {
       return
@@ -109,9 +116,12 @@ export default class CommentsForm extends Mixins(Form) {
 
     try {
       await this.setComment({ id: this.id, comment: this.form })
-      await this.reset()
 
       this.form = { ...initialForm }
+
+      requestAnimationFrame(() => {
+        this.$refs.observer.reset()
+      })
     } catch (e) {
       console.error(e)
     }

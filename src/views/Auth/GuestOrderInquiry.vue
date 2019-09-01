@@ -1,39 +1,33 @@
 <template>
-  <inquiry-form class="Inquiry" @submit.prevent="onSubmit">
-    <label class="Form-row">
-      <input
-        v-model="form.email"
-        v-validate="'required|email'"
-        name="email"
-        placeholder="Email"
-        type="text"
-      />
-    </label>
+  <validation-observer ref="observer" v-slot="{ invalid }">
+    <inquiry-form class="Inquiry" @submit.prevent="onSubmit">
+      <validation-provider rules="required|email" tag="label" class="Form-row">
+        <input
+          v-model="form.email"
+          name="email"
+          placeholder="Email"
+          type="text"
+        />
+      </validation-provider>
 
-    <label class="Form-row">
-      <input
-        v-model="form.name"
-        v-validate="'required'"
-        name="name"
-        placeholder="Name"
-        type="text"
-      />
-    </label>
+      <validation-provider rules="required" tag="label" class="Form-row">
+        <input v-model="form.name" name="name" placeholder="Name" type="text" />
+      </validation-provider>
 
-    <label class="Form-row">
-      <input
-        v-model="form.orderNumber"
-        v-validate="'required'"
-        name="orderNumber"
-        placeholder="Order Number"
-        type="text"
-      />
-    </label>
+      <validation-provider rules="required" tag="label" class="Form-row">
+        <input
+          v-model="form.orderNumber"
+          name="orderNumber"
+          placeholder="Order Number"
+          type="text"
+        />
+      </validation-provider>
 
-    <button slot="submit" type="submit" class="button" :disabled="isDisabled">
-      SUBMIT
-    </button>
-  </inquiry-form>
+      <button slot="submit" type="submit" class="button" :disabled="invalid">
+        SUBMIT
+      </button>
+    </inquiry-form>
+  </validation-observer>
 </template>
 
 <script lang="ts">
@@ -51,7 +45,7 @@ const orderModule = namespace('order')
 })
 export default class Inquiry extends Mixins(FormMixin) {
   @orderModule.Action('getOrderByGuest')
-  getOrderByGuest!: () => void
+  getOrderByGuest!: () => Promise<void>
 
   form = {
     email: '',
@@ -60,9 +54,9 @@ export default class Inquiry extends Mixins(FormMixin) {
   }
 
   async onSubmit() {
-    const response = await this.validateAll()
+    const isValid = await this.$refs.observer.validate()
 
-    if (response) {
+    if (isValid) {
       await this.getOrderByGuest()
 
       this.$router.push('/order/guest-order-detail')

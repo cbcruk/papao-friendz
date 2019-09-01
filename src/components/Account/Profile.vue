@@ -1,98 +1,107 @@
 <template>
-  <form class="Form" @submit.prevent="onSubmit">
+  <validation-observer
+    tag="form"
+    ref="observer"
+    v-slot="{ invalid }"
+    class="Form"
+    @submit.prevent="onSubmit"
+  >
     <fieldset class="Form-fieldset">
-      <profile-input label="Full Name" :error="errors.first('name')">
-        <input
-          v-model="form.name"
-          v-validate="'required'"
-          name="name"
-          type="text"
-        />
-      </profile-input>
-
-      <profile-input label="Phone Number" :error="errors.first('phoneNumber')">
-        <input
-          v-model="form.phoneNumber"
-          v-validate="'required|numeric'"
-          name="phoneNumber"
-          type="text"
-        />
-      </profile-input>
-
-      <profile-input label="Email" :error="errors.first('email')">
-        <input
-          v-model="form.email"
-          v-validate="'required|email'"
-          name="email"
-          type="email"
-          :disabled="hasCustomerInfo"
-        />
-      </profile-input>
-
-      <profile-input label="Country" :error="errors.first('country')">
-        <select
-          v-model="form.country"
-          v-validate="'required'"
-          name="country"
-          disabled
-        >
-          <option>Country</option>
-          <option value="US">
-            United States
-          </option>
-        </select>
-      </profile-input>
-
-      <profile-input
-        label="State / Province"
-        :error="errors.first('addr1Code')"
+      <validation-provider
+        name="Full Name"
+        rules="required"
+        v-slot="{ errors }"
       >
-        <select-states
-          v-validate="'required'"
-          :state="form.addr1Code"
-          name="addr1Code"
-          @change="onChangeState"
-        />
-      </profile-input>
+        <profile-input label="Full Name" :error="errors[0]">
+          <input v-model="form.name" name="name" type="text" />
+        </profile-input>
+      </validation-provider>
 
-      <profile-input
-        label="Address Line 1 (City)"
-        :error="errors.first('addr2')"
+      <validation-provider
+        name="Phone Number"
+        rules="required"
+        v-slot="{ errors }"
       >
-        <input
-          v-model="form.addr2"
-          v-validate="'required'"
-          name="addr2"
-          type="text"
-        />
-      </profile-input>
+        <profile-input label="Phone Number" :error="errors[0]">
+          <input v-model="form.phoneNumber" name="phoneNumber" type="text" />
+        </profile-input>
+      </validation-provider>
 
-      <profile-input
-        label="Address Line 2 (Street)"
-        :error="errors.first('addr3')"
+      <validation-provider
+        name="Email"
+        rules="required|email"
+        v-slot="{ errors }"
       >
-        <input
-          v-model="form.addr3"
-          v-validate="'required'"
-          name="addr3"
-          type="text"
-        />
-      </profile-input>
+        <profile-input label="Email" :error="errors[0]">
+          <input
+            v-model="form.email"
+            name="email"
+            type="email"
+            :disabled="hasCustomerInfo"
+          />
+        </profile-input>
+      </validation-provider>
 
-      <profile-input label="ZIP Code" :error="errors.first('zipCode')">
-        <input
-          v-model="form.zipCode"
-          v-validate="'required|numeric'"
-          type="text"
-          name="zipCode"
-        />
-      </profile-input>
+      <validation-provider name="Country" rules="required" v-slot="{ errors }">
+        <profile-input label="Country" :error="errors[0]">
+          <select v-model="form.country" name="country" disabled>
+            <option>Country</option>
+            <option value="US">
+              United States
+            </option>
+          </select>
+        </profile-input>
+      </validation-provider>
+
+      <validation-provider
+        name="State / Province"
+        rules="required"
+        v-slot="{ validate, errors }"
+      >
+        <profile-input label="State / Province" :error="errors[0]">
+          <select-states
+            :state="form.addr1Code"
+            name="addr1Code"
+            @change="onChangeState($event) || validate($event)"
+          />
+        </profile-input>
+      </validation-provider>
+
+      <validation-provider
+        name="Address Line 1 (City)"
+        rules="required"
+        v-slot="{ errors }"
+      >
+        <profile-input label="Address Line 1 (City)" :error="errors[0]">
+          <input v-model="form.addr2" name="addr2" type="text" />
+        </profile-input>
+      </validation-provider>
+
+      <validation-provider
+        name="Address Line 2 (Street)"
+        rules="required"
+        v-slot="{ errors }"
+      >
+        <profile-input label="Address Line 2 (Street)" :error="errors[0]">
+          <input v-model="form.addr3" name="addr3" type="text" />
+        </profile-input>
+      </validation-provider>
+
+      <validation-provider
+        name="ZIP Code"
+        rules="required|numeric"
+        v-slot="{ errors }"
+      >
+        <profile-input label="ZIP Code" :error="errors[0]">
+          <input v-model="form.zipCode" type="text" name="zipCode" />
+        </profile-input>
+      </validation-provider>
     </fieldset>
 
-    <profile-button type="submit" class="Profile-submit" :disabled="hasError">
+    <profile-button type="submit" class="Profile-submit" :disabled="invalid">
       Update
     </profile-button>
-  </form>
+  </validation-observer>
 </template>
 
 <script lang="ts">
@@ -142,14 +151,10 @@ export default class Profile extends Mixins(FormMixin) {
   hasCustomerInfo!: boolean
 
   @customerModule.Action('patchInfo')
-  patchInfo!: (params: typeof initialState) => void
+  patchInfo!: (params: typeof initialState) => Promise<void>
 
   form = {
     ...initialState,
-  }
-
-  get hasError() {
-    return this.$validator.errors.any()
   }
 
   onChangeState(state: State) {
@@ -158,7 +163,7 @@ export default class Profile extends Mixins(FormMixin) {
   }
 
   async onSubmit() {
-    const result = await this.$validator.validateAll()
+    const result = await this.$refs.observer.validate()
 
     if (!result) {
       return
@@ -184,7 +189,7 @@ export default class Profile extends Mixins(FormMixin) {
           'addr2',
           'addr3',
           'zipCode',
-        ]
+        ],
       )
 
       this.form = {

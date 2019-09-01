@@ -1,69 +1,73 @@
 <template>
   <div class="Password">
-    <form
-      ref="form"
+    <validation-observer
+      tag="form"
       class="Password-form"
       @submit.prevent="onSubmit"
+      v-slot="{ invalid }"
     >
-      <password-input
-        label="Current Password"
-        :error="errors.first('oldPassword')"
+      <validation-provider
+        name="Current Password"
+        rules="required"
+        v-slot="{ errors }"
       >
-        <input
-          v-model="form.oldPassword"
-          v-validate="'required'"
-          name="oldPassword"
-          type="password"
-        >
-      </password-input>
+        <password-input label="Current Password" :error="errors[0]">
+          <input
+            v-model="form.oldPassword"
+            name="oldPassword"
+            type="password"
+          />
+        </password-input>
+      </validation-provider>
 
-      <password-input
-        label="New Password"
-        :error="errors.first('newPassword')"
+      <validation-provider
+        name="New Password"
+        vid="newPassword"
+        rules="required|min:6"
+        v-slot="{ errors }"
       >
-        <input
-          ref="newPassword"
-          v-model="form.newPassword"
-          v-validate="'required|min:6'"
-          name="newPassword"
-          type="password"
-        >
-      </password-input>
+        <password-input label="New Password" :error="errors[0]">
+          <input
+            ref="newPassword"
+            v-model="form.newPassword"
+            name="newPassword"
+            type="password"
+          />
+        </password-input>
+      </validation-provider>
 
-      <password-input
-        label="Repeat New Password"
-        :error="errors.first('repeat')"
+      <validation-provider
+        name="Repeat New Password"
+        rules="required|confirmed:newPassword"
+        v-slot="{ errors }"
       >
-        <input
-          v-model="form.confirmPassword"
-          v-validate.bails="'required|confirmed:newPassword'"
-          name="confirmPassword"
-          type="password"
-        >
-      </password-input>
+        <password-input label="Repeat New Password" :error="errors[0]">
+          <input
+            v-model="form.confirmPassword"
+            name="confirmPassword"
+            type="password"
+          />
+        </password-input>
+      </validation-provider>
 
       <password-button
         type="submit"
-        :disabled="isDisabled"
+        :disabled="invalid"
         class="Password-submit"
       >
         Change Password
       </password-button>
-    </form>
+    </validation-observer>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Watch } from 'vue-property-decorator'
+import { Vue, Component, Watch, Mixins } from 'vue-property-decorator'
 import mapValues from 'lodash/mapValues'
 import { POST } from '@/api/http'
 import FormMixin from '@/mixins/Form'
 import PasswordInput from '@/components/common/Input.vue'
 import PasswordButton from '@/components/common/Button.vue'
-
-type Form = {
-  [key: string]: string
-}
 
 @Component({
   components: {
@@ -72,20 +76,27 @@ type Form = {
   },
 })
 export default class Password extends Mixins(FormMixin) {
-  form: Form = {
+  form: {
+    oldPassword: string
+    newPassword: string
+    confirmPassword: string
+  } = {
     oldPassword: '',
     newPassword: '',
     confirmPassword: '',
   }
 
   async onSubmit() {
-    const response = await this.validateAll()
+    const isValid = await this.$refs.observer.validate()
 
-    if (response) {
+    if (isValid) {
       await POST('/customer/change-password', this.form)
 
       this.form = mapValues(this.form, () => '')
-      this.$validator.reset()
+
+      requestAnimationFrame(() => {
+        this.$refs.observer.reset()
+      })
     }
   }
 }
