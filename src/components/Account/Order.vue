@@ -20,14 +20,14 @@ export default class Order extends Vue {
   items!: Item[]
 
   @customerModule.Action('getOrders')
-  getOrders!: () => void
+  getOrders!: () => Promise<void>
 
   get hasItems() {
     return Boolean(this.items.length)
   }
 
-  mounted() {
-    this.getOrders()
+  async mounted() {
+    await this.getOrders()
   }
 }
 </script>

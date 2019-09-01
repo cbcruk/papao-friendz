@@ -11,8 +11,6 @@ const actions: ActionTree<CustomerState, RootState> = {
       commit('SET_INFO', response.data)
 
       dispatch('collection/getItems', null, { root: true })
-
-      return response
     } catch (e) {
       console.error(e)
     }

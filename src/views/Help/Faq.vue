@@ -26,10 +26,10 @@ export default class Faq extends Vue {
   items!: Items
 
   @faqModule.Action('getItems')
-  getItems!: () => void
+  getItems!: () => Promise<void>
 
-  mounted() {
-    this.getItems()
+  async mounted() {
+    await this.getItems()
   }
 }
 </script>

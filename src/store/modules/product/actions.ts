@@ -46,8 +46,6 @@ const actions: ActionTree<ProductState, RootState> = {
       await POST(`products/${id}/comments`, comment)
 
       dispatch('getComments')
-
-      return id
     } catch (e) {
       console.error(e)
     }

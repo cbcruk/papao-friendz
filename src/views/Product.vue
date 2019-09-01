@@ -58,7 +58,7 @@ type Relation = ProductState['relation']
 })
 export default class Product extends Vue {
   @productModule.Action('getItem')
-  getItem!: (id: string) => void
+  getItem!: (id: string) => Promise<void>
 
   @productModule.Getter('item')
   item!: Item

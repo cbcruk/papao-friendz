@@ -21,13 +21,13 @@ type Items = ProductsState['items']
 })
 export default class Home extends Vue {
   @productsModule.Action('getItems')
-  getProducts!: () => void
+  getProducts!: () => Promise<void>
 
   @productsModule.Getter('itemsWithCollect')
   productsWithCollect!: Items
 
-  mounted() {
-    this.getProducts()
+  async mounted() {
+    await this.getProducts()
   }
 }
 </script>

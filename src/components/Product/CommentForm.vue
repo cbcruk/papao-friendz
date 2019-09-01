@@ -77,7 +77,7 @@ export default class CommentsForm extends Mixins(Form) {
   setComment!: (params: {
     id: number
     comment: typeof initialForm
-  }) => Promise<number | undefined>
+  }) => Promise<void>
 
   messages: string[] = [
     'One of my FAVORITES!',

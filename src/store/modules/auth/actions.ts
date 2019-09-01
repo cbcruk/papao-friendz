@@ -14,8 +14,6 @@ const actions: ActionTree<AuthState, RootState> = {
       await POST('/auth/save-token', { token })
 
       commit('customer/SET_INFO', customer, { root: true })
-
-      window.location.href = '/'
     } catch (e) {
       console.error(e)
     }
@@ -23,8 +21,6 @@ const actions: ActionTree<AuthState, RootState> = {
   async signUp(_, params) {
     try {
       await POST('/auth/signup', params)
-
-      return true
     } catch (e) {
       console.error(e)
     }
@@ -32,8 +28,6 @@ const actions: ActionTree<AuthState, RootState> = {
   async signOut(_, params) {
     try {
       await POST('/auth/signout', params)
-
-      window.location.href = '/'
     } catch (e) {
       console.error(e)
     }
@@ -41,7 +35,6 @@ const actions: ActionTree<AuthState, RootState> = {
   async forgotPassword(_, params) {
     try {
       await POST('/auth/forgot', params)
-      return true
     } catch (e) {
       console.error(e)
     }

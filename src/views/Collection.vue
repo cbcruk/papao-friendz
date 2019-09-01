@@ -26,10 +26,10 @@ type Items = CollectionState['items']
 })
 export default class Collection extends Vue {
   @collectionModule.Action('getShippingPrice')
-  getShippingPrice!: () => void
+  getShippingPrice!: () => Promise<void>
 
   @collectionModule.Action('getStockTaking')
-  getStockTaking!: () => void
+  getStockTaking!: () => Promise<void>
 
   @collectionModule.Getter('items')
   items!: Items
@@ -44,9 +44,9 @@ export default class Collection extends Vue {
   prices!: Prices
 
   @Watch('items', { immediate: true })
-  onItemsChanged(items: Items) {
-    this.getShippingPrice()
-    this.getStockTaking()
+  async onItemsChanged(items: Items) {
+    await this.getShippingPrice()
+    await this.getStockTaking()
   }
 }
 </script>

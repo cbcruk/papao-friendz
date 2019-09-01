@@ -90,7 +90,9 @@ export default class Sign extends Mixins(FormMixin) {
     const isValid = await this.$refs.observer.validate()
 
     if (isValid) {
-      this.signIn(this.form)
+      await this.signIn(this.form)
+
+      window.location.href = '/'
     }
   }
 }

@@ -66,8 +66,6 @@ const actions: ActionTree<OrderState, RootState> = {
   async getOrderByGuest(_, params) {
     try {
       GET('/orders/guest', params)
-
-      return true
     } catch (e) {
       console.error(e)
     }

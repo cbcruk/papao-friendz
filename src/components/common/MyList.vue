@@ -37,22 +37,22 @@ export default class MyList extends Vue {
   item!: Product
 
   @collectionModule.Action('addItem')
-  addItem!: (params: { id: number; from: string }) => void
+  addItem!: (params: { id: number; from: string }) => Promise<void>
 
   @collectionModule.Action('patchItem')
-  patchItem!: (params: { id: number; checked: boolean }) => void
+  patchItem!: (params: { id: number; checked: boolean }) => Promise<void>
 
-  onList() {
+  async onList() {
     const { name: from = '' } = this.$route
     const { isCollected, checked, id } = this.item
 
     if (isCollected) {
-      this.patchItem({
+      await this.patchItem({
         id,
         checked: !checked,
       })
     } else {
-      this.addItem({ id, from })
+      await this.addItem({ id, from })
     }
   }
 }

@@ -52,15 +52,15 @@ export default class Items extends Vue {
   hasItems!: boolean
 
   @collectionModule.Action('patchItem')
-  patchItem!: (params: { id: number; checked: boolean }) => void
+  patchItem!: (params: { id: number; checked: boolean }) => Promise<void>
 
   @collectionModule.Action('deleteItem')
-  deleteItem!: () => void
+  deleteItem!: () => Promise<void>
 
-  onChange(item: Collection) {
+  async onChange(item: Collection) {
     const { productSubId: id, checked } = item
 
-    this.patchItem({
+    await this.patchItem({
       id,
       checked: !checked,
     })

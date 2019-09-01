@@ -13,7 +13,7 @@
     </account-toggle>
 
     <h2 class="Account-signout">
-      <a @click="signOut">
+      <a @click="handleSignOut">
         SIGN OUT
       </a>
     </h2>
@@ -40,7 +40,13 @@ const authModule = namespace('auth')
 })
 export default class Account extends Vue {
   @authModule.Action('signOut')
-  signOut!: () => void
+  signOut!: () => Promise<void>
+
+  async handleSignOut() {
+    await this.signOut()
+
+    window.location.href = '/'
+  }
 
   items = []
 }

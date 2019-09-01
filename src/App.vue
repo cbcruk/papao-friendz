@@ -30,7 +30,7 @@ const customerModule = namespace('customer')
 })
 export default class App extends Vue {
   @customerModule.Action('getInfo')
-  getCustomerInfo!: () => void
+  getCustomerInfo!: () => Promise<void>
 
   get isShowHeader() {
     return this.$route.matched.some(m => m.meta.header === false)
@@ -40,8 +40,8 @@ export default class App extends Vue {
     return this.$route.matched.some(m => m.meta.footer === false)
   }
 
-  mounted() {
-    this.getCustomerInfo()
+  async mounted() {
+    await this.getCustomerInfo()
   }
 }
 </script>

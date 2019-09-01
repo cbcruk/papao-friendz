@@ -38,8 +38,8 @@ export default class Summary extends Vue {
   @orderModule.Action('setItems')
   setItems!: () => void
 
-  async onSubmit() {
-    await this.setItems()
+  onSubmit() {
+    this.setItems()
 
     this.$router.push('/checkout')
   }

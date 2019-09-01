@@ -43,14 +43,14 @@ export default class Order extends Vue {
   items!: Items
 
   @orderModule.Action('getShippingPrice')
-  getShippingPrice!: () => void
+  getShippingPrice!: () => Promise<void>
 
   @orderModule.Action('patchItem')
-  patchItem!: () => void
+  patchItem!: () => Promise<void>
 
   @Watch('items', { immediate: true })
-  onItemsChanged(items: Items) {
-    this.getShippingPrice()
+  async onItemsChanged(items: Items) {
+    await this.getShippingPrice()
   }
 }
 </script>
